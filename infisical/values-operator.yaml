@@ -1,0 +1,9 @@
+controllerManager:
+  manager:
+    image:
+      repository: docker.io/infisical/kubernetes-operator
+  tolerations:
+    - key: "oci.oraclecloud.com/oke-is-preemptible"
+      operator: "Equal"
+      value: "present"
+      effect: "NoSchedule"

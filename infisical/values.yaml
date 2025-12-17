@@ -1,0 +1,23 @@
+infisical:
+  image:
+    repository: docker.io/infisical/infisical
+    tag: v0.154.6
+    pullPolicy: IfNotPresent
+  kubeSecretRef: infisical
+  tolerations:
+    - key: "oci.oraclecloud.com/oke-is-preemptible"
+      operator: "Equal"
+      value: "present"
+      effect: "NoSchedule"
+ingress:
+  enabled: true
+  ingressClassName: tailscale
+  nginx:
+    enabled: false
+  tls:
+    - hosts:
+        - infisical
+postgresql:
+  enabled: false
+redis:
+  enabled: false

@@ -8,6 +8,8 @@ spec:
     - https://github.com/byulmaru/infrastructure.git
     - https://argoproj.github.io/argo-helm
     - https://kubernetes-sigs.github.io/metrics-server/
+    - https://cloudnative-pg.github.io/charts
+    - https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts
   destinations:
     - server: https://kubernetes.default.svc
       namespace: "*"

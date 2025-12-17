@@ -1,0 +1,38 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+spec:
+  instances: 1
+
+  primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
+
+  postgresql:
+    pg_hba:
+      - host all all all scram-sha-256
+
+  bootstrap:
+    initdb:
+      database: infisical
+      owner: infisical
+      secret:
+        name: postgres
+
+  storage:
+    size: 50Gi
+    storageClass: oci-bv
+
+  managed:
+    roles:
+      - name: infisical
+        ensure: present
+        login: true
+        replication: true
+        inRoles:
+          - pg_monitor
+
+  resources:
+    limits:
+      memory: "2Gi"
+      cpu: "500m"
