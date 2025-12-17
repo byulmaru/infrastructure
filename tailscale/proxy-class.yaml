@@ -1,0 +1,9 @@
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
+  name: kube-apiserver
+spec:
+  statefulSet:
+    pod:
+      tailscaleContainer:
+        image: docker.io/tailscale/k8s-proxy:latest
