@@ -4,6 +4,15 @@ infisical:
     tag: v0.154.6
     pullPolicy: IfNotPresent
   kubeSecretRef: infisical
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: oci.oraclecloud.com/oke-is-preemptible
+                operator: Exists
+                values: []
   tolerations:
     - key: "oci.oraclecloud.com/oke-is-preemptible"
       operator: "Equal"
