@@ -10,6 +10,9 @@ spec:
     - https://kubernetes-sigs.github.io/metrics-server/
     - https://cloudnative-pg.github.io/charts
     - https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts
+    - https://pkgs.tailscale.com/helmcharts
+    - https://kubernetes.github.io/ingress-nginx
+    - oci://quay.io/jetstack/charts/cert-manager
   destinations:
     - server: https://kubernetes.default.svc
       namespace: "*"

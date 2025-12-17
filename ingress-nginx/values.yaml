@@ -1,0 +1,12 @@
+controller:
+  service:
+    annotations:
+      oci.oraclecloud.com/load-balancer-type: "nlb"
+      service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
+      service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+      service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "1000"
+      oci-network-load-balancer.oraclecloud.com/is-ppv2-enabled: "true"
+  config:
+    use-proxy-protocol: "true"
+    use-http2: "true"
+    enable-real-ip: "true"
