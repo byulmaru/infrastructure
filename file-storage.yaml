@@ -1,0 +1,8 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: oci-fs
+provisioner: fss.csi.oraclecloud.com
+parameters:
+  availabilityDomain: AP-SEOUL-1-AD-1
+  mountTargetOcid: ocid1.mounttarget.oc1.ap_seoul_1.aaaaaa4np2wiw2fmnfrw4llqojxwiotboawxgzlpovwc2mjnmfsc2mia

@@ -14,6 +14,7 @@ spec:
     - https://kubernetes.github.io/ingress-nginx
     - oci://quay.io/jetstack/charts/cert-manager
     - oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
+    - https://grafana.github.io/helm-charts
   destinations:
     - server: https://kubernetes.default.svc
       namespace: "*"

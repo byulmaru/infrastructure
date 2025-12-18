@@ -1,17 +1,13 @@
 alertmanager:
-  ingress:
-    enabled: true
-    ingressClassName: tailscale
-    tls:
-      - hosts:
-          - alertmanager
-  storage:
-    volumeClaimTemplate:
-      spec:
-        storageClassName: oci-bv
-        resources:
-          requests:
-            storage: 10Gi
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: oci-fs
+          accessModes: ["ReadWriteMany"]
+          resources:
+            requests:
+              storage: 10Gi
 grafana:
   ingress:
     enabled: true
@@ -21,12 +17,12 @@ grafana:
           - grafana
 prometheus:
   prometheusSpec:
-    retention: 30d
-    retentionSize: 50GB
+    retentionSize: "50GB"
     storageSpec:
       volumeClaimTemplate:
         spec:
           storageClassName: oci-bv
+          accessModes: ["ReadWriteOnce"]
           resources:
             requests:
               storage: 50Gi
