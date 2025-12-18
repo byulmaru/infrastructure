@@ -26,3 +26,8 @@ prometheus:
           resources:
             requests:
               storage: 50Gi
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorNamespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: Exists

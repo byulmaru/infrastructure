@@ -31,3 +31,9 @@ spec:
       kind: "*"
       managedFieldsManagers:
         - prometheus-operator
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/metadata/annotations/checksum/secret
+    - group: apps
+      kind: Secret
