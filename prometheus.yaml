@@ -34,6 +34,7 @@ spec:
     - group: apps
       kind: Deployment
       jsonPointers:
-        - /spec/template/metadata/annotations/checksum/secret
-    - group: apps
+        - /spec/template/metadata/annotations/checksum~1secret
+    - group: ""
       kind: Secret
+      name: prometheus-grafana
