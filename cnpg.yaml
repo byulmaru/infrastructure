@@ -5,10 +5,14 @@ metadata:
   namespace: argocd
 spec:
   project: infrastructure
-  source:
-    repoURL: https://cloudnative-pg.github.io/charts
-    chart: cloudnative-pg
-    targetRevision: 0.27.0
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cloudnative-pg
+      targetRevision: 0.27.0
+    - repoURL: https://github.com/byulmaru/infrastructure.git
+      targetRevision: HEAD
+      path: cnpg
+
   destination:
     server: https://kubernetes.default.svc
     namespace: cnpg-system
@@ -18,3 +22,14 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+  ignoreDifferences:
+    - group: "admissionregistration.k8s.io"
+      kind: MutatingWebhookConfiguration
+      name: cnpg-mutating-webhook-configuration
+      jqPathExpressions:
+        - .webhooks[].clientConfig.caBundle
+    - group: "admissionregistration.k8s.io"
+      kind: ValidatingWebhookConfiguration
+      name: cnpg-validating-webhook-configuration
+      jqPathExpressions:
+        - .webhooks[].clientConfig.caBundle

@@ -17,6 +17,7 @@ spec:
     - https://grafana.github.io/helm-charts
     - https://kubernetes-sigs.github.io/descheduler/
     - https://helm.elastic.co
+    - https://github.com/cloudnative-pg/plugin-barman-cloud
   destinations:
     - server: https://kubernetes.default.svc
       namespace: "*"
