@@ -35,7 +35,7 @@ spec:
             - --stderrthreshold=info
             - --cloud-provider=oci
             - --max-node-provision-time=25m
-            - --nodes=2:5:ocid1.nodepool.oc1.ap-seoul-1.aaaaaaaaes7myytzavqevqtigv3rwvbwe6ufgdh5h5hz6e276ncb54tdv53q
+            - --nodes=1:5:ocid1.nodepool.oc1.ap-seoul-1.aaaaaaaaes7myytzavqevqtigv3rwvbwe6ufgdh5h5hz6e276ncb54tdv53q
             - --scale-down-delay-after-add=10m
             - --scale-down-unneeded-time=10m
             - --unremovable-node-recheck-timeout=5m
