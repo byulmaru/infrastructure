@@ -1,5 +1,8 @@
 controller:
+  image:
+    repository: docker.io/nginx/nginx-ingress
   service:
+    externalTrafficPolicy: Cluster
     annotations:
       oci.oraclecloud.com/load-balancer-type: "nlb"
       service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
@@ -7,6 +10,6 @@ controller:
       service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "1000"
       oci-network-load-balancer.oraclecloud.com/is-ppv2-enabled: "true"
   config:
-    use-proxy-protocol: "true"
-    use-http2: "true"
-    enable-real-ip: "true"
+    entries:
+      proxy-protocol: "true"
+      http2: "true"

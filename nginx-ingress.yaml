@@ -1,24 +1,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ingress-nginx
+  name: nginx-ingress
   namespace: argocd
 spec:
   project: infrastructure
   sources:
-    - repoURL: https://kubernetes.github.io/ingress-nginx
-      chart: ingress-nginx
-      targetRevision: 4.14.1
+    - repoURL: oci://ghcr.io/nginx/charts/nginx-ingress
+      chart: nginx-ingress
+      targetRevision: 2.4.1
       helm:
         valueFiles:
-          - $values/ingress-nginx/values.yaml
+          - $values/nginx-ingress/values.yaml
     - repoURL: https://github.com/byulmaru/infrastructure.git
       targetRevision: HEAD
       ref: values
-      path: ingress-nginx
+      path: nginx-ingress
   destination:
     server: https://kubernetes.default.svc
-    namespace: ingress-nginx
+    namespace: nginx-ingress
   syncPolicy:
     automated:
       enabled: true
