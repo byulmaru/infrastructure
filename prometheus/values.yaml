@@ -31,3 +31,6 @@ prometheus:
       matchExpressions:
         - key: kubernetes.io/metadata.name
           operator: Exists
+kube-state-metrics:
+  metricLabelsAllowlist:
+    - nodes=[oci.oraclecloud.com/oke-is-preemptible]
