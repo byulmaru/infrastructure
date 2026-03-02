@@ -41,8 +41,8 @@ spec:
             - noeviction
           resources:
             limits:
-              memory: "2Gi"
-              cpu: "250m"
+              memory: "1Gi"
+              cpu: "125m"
           volumeMounts:
             - name: data
               mountPath: /data
