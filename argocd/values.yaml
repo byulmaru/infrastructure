@@ -1,3 +1,13 @@
 configs:
   cm:
     application.resourceTrackingMethod: annotation
+    dex.config: |
+      connectors:
+        - type: oidc
+          id: github-actions
+          name: GitHub Actions
+          config:
+            issuer: https://token.actions.githubusercontent.com/
+            scopes: [openid]
+            userNameKey: sub
+            insecureSkipEmailVerified: true
