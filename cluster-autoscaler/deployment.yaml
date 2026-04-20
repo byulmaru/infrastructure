@@ -39,6 +39,7 @@ spec:
             - --scale-down-delay-after-add=10m
             - --scale-down-unneeded-time=10m
             - --unremovable-node-recheck-timeout=5m
+            - --skip-nodes-with-local-storage=false
             - --balance-similar-node-groups
             - --balancing-ignore-label=displayName
             - --balancing-ignore-label=hostname
