@@ -14,12 +14,13 @@ spec:
     app: redis
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: redis
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
+  serviceName: redis
   replicas: 1
   selector:
     matchLabels:
