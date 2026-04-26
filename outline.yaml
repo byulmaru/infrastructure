@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: outline
+  namespace: argocd
+spec:
+  project: infrastructure
+  sources:
+    - repoURL: https://github.com/byulmaru/infrastructure.git
+      targetRevision: HEAD
+      path: outline
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: outline
+  syncPolicy:
+    automated:
+      enabled: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
