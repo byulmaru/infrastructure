@@ -81,6 +81,12 @@ spec:
                     limits:
                       cpu: "1"
                       memory: 4Gi
+                  volumeMounts:
+                    - name: runner-tmp
+                      mountPath: /tmp/arc-runner
+              volumes:
+                - name: runner-tmp
+                  emptyDir: {}
     - repoURL: https://github.com/byulmaru/infrastructure.git
       targetRevision: HEAD
       path: actions-runner
