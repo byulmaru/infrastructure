@@ -1,0 +1,94 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: actions-runner
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: infrastructure
+  sources:
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+      chart: gha-runner-scale-set
+      targetRevision: 0.14.1
+      helm:
+        valuesObject:
+          githubConfigUrl: https://github.com/byulmaru
+          githubConfigSecret: arc-github-app
+          runnerScaleSetName: byulmaru-arc
+          minRunners: 0
+          maxRunners: 5
+          containerMode:
+            type: kubernetes-novolume
+          controllerServiceAccount:
+            namespace: arc-systems
+            name: actions-runner-controller-gha-rs-controller
+          listenerTemplate:
+            spec:
+              priorityClassName: preemptible
+              affinity:
+                nodeAffinity:
+                  preferredDuringSchedulingIgnoredDuringExecution:
+                    - weight: 1
+                      preference:
+                        matchExpressions:
+                          - key: oci.oraclecloud.com/oke-is-preemptible
+                            operator: Exists
+                            values: []
+              tolerations:
+                - key: oci.oraclecloud.com/oke-is-preemptible
+                  operator: Equal
+                  value: present
+                  effect: NoSchedule
+              containers:
+                - name: listener
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 128Mi
+                    limits:
+                      cpu: 500m
+                      memory: 512Mi
+          template:
+            spec:
+              priorityClassName: preemptible
+              affinity:
+                nodeAffinity:
+                  preferredDuringSchedulingIgnoredDuringExecution:
+                    - weight: 1
+                      preference:
+                        matchExpressions:
+                          - key: oci.oraclecloud.com/oke-is-preemptible
+                            operator: Exists
+                            values: []
+              tolerations:
+                - key: oci.oraclecloud.com/oke-is-preemptible
+                  operator: Equal
+                  value: present
+                  effect: NoSchedule
+              containers:
+                - name: runner
+                  image: ghcr.io/actions/actions-runner:latest
+                  command:
+                    - /home/runner/run.sh
+                  env:
+                    - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+                      value: "false"
+                  resources:
+                    requests:
+                      cpu: 250m
+                      memory: 1Gi
+                    limits:
+                      cpu: "1"
+                      memory: 4Gi
+    - repoURL: https://github.com/byulmaru/infrastructure.git
+      targetRevision: HEAD
+      path: actions-runner
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-runners
+  syncPolicy:
+    automated:
+      enabled: true
+    syncOptions:
+      - CreateNamespace=true
