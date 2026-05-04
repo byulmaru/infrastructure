@@ -19,7 +19,7 @@ spec:
           minRunners: 0
           maxRunners: 5
           containerMode:
-            type: kubernetes-novolume
+            type: dind
           controllerServiceAccount:
             namespace: arc-systems
             name: actions-runner-controller-gha-rs-controller
@@ -50,7 +50,6 @@ spec:
                       memory: 512Mi
           template:
             spec:
-              serviceAccountName: buildx-runner
               affinity:
                 nodeAffinity:
                   preferredDuringSchedulingIgnoredDuringExecution:
@@ -75,17 +74,11 @@ spec:
                       value: "false"
                   resources:
                     requests:
-                      cpu: 250m
-                      memory: 1Gi
-                    limits:
                       cpu: "1"
                       memory: 4Gi
-                  volumeMounts:
-                    - name: runner-tmp
-                      mountPath: /tmp/arc-runner
-              volumes:
-                - name: runner-tmp
-                  emptyDir: {}
+                    limits:
+                      cpu: "2"
+                      memory: 4Gi
     - repoURL: https://github.com/byulmaru/infrastructure.git
       targetRevision: HEAD
       path: actions-runner
@@ -95,6 +88,7 @@ spec:
   syncPolicy:
     automated:
       enabled: true
+      prune: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
