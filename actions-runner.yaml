@@ -50,6 +50,7 @@ spec:
                       memory: 512Mi
           template:
             spec:
+              serviceAccountName: buildx-runner
               affinity:
                 nodeAffinity:
                   preferredDuringSchedulingIgnoredDuringExecution:

@@ -1,83 +1,66 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: buildkitd
+  name: buildx-runner
   namespace: arc-runners
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: buildkitd
-  template:
-    metadata:
-      annotations:
-        container.apparmor.security.beta.kubernetes.io/buildkitd: unconfined
-      labels:
-        app.kubernetes.io/name: buildkitd
-    spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 1
-              preference:
-                matchExpressions:
-                  - key: oci.oraclecloud.com/oke-is-preemptible
-                    operator: Exists
-                    values: []
-      tolerations:
-        - key: oci.oraclecloud.com/oke-is-preemptible
-          operator: Equal
-          value: present
-          effect: NoSchedule
-      containers:
-        - name: buildkitd
-          image: docker.io/moby/buildkit:rootless
-          args:
-            - --addr
-            - tcp://0.0.0.0:1234
-            - --oci-worker-no-process-sandbox
-          ports:
-            - name: buildkit
-              containerPort: 1234
-          readinessProbe:
-            tcpSocket:
-              port: buildkit
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          livenessProbe:
-            tcpSocket:
-              port: buildkit
-            initialDelaySeconds: 15
-            periodSeconds: 20
-          resources:
-            requests:
-              cpu: 250m
-              memory: 512Mi
-            limits:
-              cpu: "1"
-              memory: 2Gi
-          securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-            runAsNonRoot: true
-            seccompProfile:
-              type: Unconfined
-          volumeMounts:
-            - name: cache
-              mountPath: /home/user/.local/share/buildkit
-      volumes:
-        - name: cache
-          emptyDir: {}
 ---
 apiVersion: v1
-kind: Service
+kind: ServiceAccount
 metadata:
-  name: buildkitd
+  name: buildkit
   namespace: arc-runners
-spec:
-  selector:
-    app.kubernetes.io/name: buildkitd
-  ports:
-    - name: buildkit
-      port: 1234
-      targetPort: buildkit
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: buildx-runner
+  namespace: arc-runners
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/attach
+      - pods/exec
+      - pods/log
+      - services
+      - configmaps
+      - secrets
+      - events
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - statefulsets
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: buildx-runner
+  namespace: arc-runners
+subjects:
+  - kind: ServiceAccount
+    name: buildx-runner
+    namespace: arc-runners
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: buildx-runner
