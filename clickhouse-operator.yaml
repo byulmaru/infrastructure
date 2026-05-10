@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: clickhouse-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: infrastructure
+  source:
+    repoURL: oci://ghcr.io/clickhouse/clickhouse-operator-helm
+    chart: clickhouse-operator-helm
+    targetRevision: 0.0.4-f08fa9e
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: clickhouse-operator-system
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

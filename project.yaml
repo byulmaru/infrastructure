@@ -16,6 +16,7 @@ spec:
     - oci://ghcr.io/nginx/charts/nginx-ingress
     - oci://quay.io/jetstack/charts/cert-manager
     - oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
+    - oci://ghcr.io/clickhouse/clickhouse-operator-helm
     - https://grafana.github.io/helm-charts
     - https://kubernetes-sigs.github.io/descheduler/
     - https://helm.elastic.co
