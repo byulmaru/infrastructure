@@ -6,6 +6,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
     cert-manager.io/cluster-issuer: cert-issuer
     nginx.org/redirect-to-https: "true"
+    nginx.org/rewrites: serviceName=op-api rewrite=/
 spec:
   ingressClassName: nginx
   tls:
@@ -16,7 +17,7 @@ spec:
     - host: openpanel.byulmaru.co
       http:
         paths:
-          - path: /api
+          - path: /api/
             pathType: Prefix
             backend:
               service:
