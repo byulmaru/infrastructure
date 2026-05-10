@@ -23,6 +23,8 @@ metadata:
   labels:
     app: op-api
     component: api
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   replicas: 1
   selector:
@@ -67,6 +69,16 @@ spec:
                 sleep 2
               done
               echo "All databases are ready!"
+        - name: init-clickhouse-database
+          image: docker.io/clickhouse/clickhouse-server:25.10.2.65
+          command:
+            - sh
+            - -c
+            - |
+              until clickhouse-client --host main-clickhouse-headless --query "CREATE DATABASE IF NOT EXISTS openpanel"; do
+                echo "Waiting to initialize ClickHouse database..."
+                sleep 5
+              done
       containers:
         - name: api
           image: docker.io/lindesvard/openpanel-api:latest
@@ -240,6 +252,8 @@ metadata:
   labels:
     app: op-dashboard
     component: dashboard
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   replicas: 1
   selector:
@@ -375,6 +389,8 @@ metadata:
   labels:
     app: op-worker
     component: worker
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   replicas: 1
   selector:
