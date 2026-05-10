@@ -1,0 +1,52 @@
+apiVersion: clickhouse.com/v1alpha1
+kind: KeeperCluster
+metadata:
+  name: keeper
+spec:
+  replicas: 1
+  dataVolumeClaimSpec:
+    storageClassName: oci-bv
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+  containerTemplate:
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+---
+apiVersion: clickhouse.com/v1alpha1
+kind: ClickHouseCluster
+metadata:
+  name: main
+spec:
+  replicas: 1
+  shards: 1
+  keeperClusterRef:
+    name: keeper
+  dataVolumeClaimSpec:
+    storageClassName: oci-bv
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Gi
+  containerTemplate:
+    image:
+      repository: docker.io/clickhouse/clickhouse-server
+      tag: 25.10.2.65
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 4Gi
+  settings:
+    logger:
+      level: warning

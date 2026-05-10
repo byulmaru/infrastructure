@@ -1,0 +1,38 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+spec:
+  instances: 1
+
+  primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
+
+  postgresql:
+    pg_hba:
+      - host all all all scram-sha-256
+
+  bootstrap:
+    initdb:
+      database: openpanel
+      owner: openpanel
+      secret:
+        name: postgres
+
+  storage:
+    size: 20Gi
+    storageClass: oci-bv
+
+  managed:
+    roles:
+      - name: openpanel
+        ensure: present
+        login: true
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 500m

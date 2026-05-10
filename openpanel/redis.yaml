@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: op-kv
+  labels:
+    app: op-kv
+    component: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      name: redis
+  selector:
+    app: op-kv
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: op-kv
+  labels:
+    app: op-kv
+    component: redis
+spec:
+  serviceName: op-kv
+  replicas: 1
+  selector:
+    matchLabels:
+      app: op-kv
+  template:
+    metadata:
+      labels:
+        app: op-kv
+    spec:
+      containers:
+        - name: redis
+          image: docker.io/library/redis:7.2.5-alpine
+          ports:
+            - containerPort: 6379
+              name: redis
+          command:
+            - redis-server
+            - --maxmemory-policy
+            - noeviction
+            - --notify-keyspace-events
+            - Ex
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 1Gi
+              cpu: "1"
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes:
+          - ReadWriteMany
+        storageClassName: oci-fs
+        resources:
+          requests:
+            storage: 10Gi
