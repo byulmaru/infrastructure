@@ -33,6 +33,20 @@ spec:
       labels:
         app: op-api
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: oci.oraclecloud.com/oke-is-preemptible
+                    operator: Exists
+                    values: []
+      tolerations:
+        - key: oci.oraclecloud.com/oke-is-preemptible
+          operator: Equal
+          value: present
+          effect: NoSchedule
       initContainers:
         - name: wait-for-databases
           image: docker.io/library/busybox:1.36
@@ -236,6 +250,20 @@ spec:
       labels:
         app: op-dashboard
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: oci.oraclecloud.com/oke-is-preemptible
+                    operator: Exists
+                    values: []
+      tolerations:
+        - key: oci.oraclecloud.com/oke-is-preemptible
+          operator: Equal
+          value: present
+          effect: NoSchedule
       initContainers:
         - name: wait-for-api
           image: docker.io/library/busybox:1.36
@@ -357,6 +385,20 @@ spec:
       labels:
         app: op-worker
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: oci.oraclecloud.com/oke-is-preemptible
+                    operator: Exists
+                    values: []
+      tolerations:
+        - key: oci.oraclecloud.com/oke-is-preemptible
+          operator: Equal
+          value: present
+          effect: NoSchedule
       initContainers:
         - name: wait-for-api
           image: docker.io/library/busybox:1.36
