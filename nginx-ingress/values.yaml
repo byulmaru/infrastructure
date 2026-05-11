@@ -13,3 +13,4 @@ controller:
     entries:
       proxy-protocol: "true"
       http2: "true"
+      client-max-body-size: "200m"
