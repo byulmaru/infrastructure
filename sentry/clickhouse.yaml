@@ -1,0 +1,78 @@
+apiVersion: clickhouse.com/v1alpha1
+kind: KeeperCluster
+metadata:
+  name: keeper
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  replicas: 1
+  dataVolumeClaimSpec:
+    storageClassName: oci-bv-low
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  containerTemplate:
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+---
+apiVersion: clickhouse.com/v1alpha1
+kind: ClickHouseCluster
+metadata:
+  name: main
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  replicas: 1
+  shards: 1
+  keeperClusterRef:
+    name: keeper
+  dataVolumeClaimSpec:
+    storageClassName: oci-bv
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Gi
+  containerTemplate:
+    image:
+      repository: docker.io/clickhouse/clickhouse-server
+      tag: 25.10.2.65
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 3Gi
+  settings:
+    logger:
+      level: warning
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-clickhouse-database
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init-clickhouse-database
+          image: docker.io/clickhouse/clickhouse-server:25.10.2.65
+          command:
+            - sh
+            - -c
+            - |
+              until clickhouse-client --host main-clickhouse-headless --query "CREATE DATABASE IF NOT EXISTS sentry"; do
+                echo "Waiting to initialize ClickHouse database..."
+                sleep 5
+              done

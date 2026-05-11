@@ -1,0 +1,388 @@
+preemptibleAffinity: &preemptibleAffinity
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+            - key: oci.oraclecloud.com/oke-is-preemptible
+              operator: Exists
+              values: []
+
+preemptibleTolerations: &preemptibleTolerations
+  - key: "oci.oraclecloud.com/oke-is-preemptible"
+    operator: "Equal"
+    value: "present"
+    effect: "NoSchedule"
+
+smallWorkloadResources: &smallWorkloadResources
+  requests:
+    cpu: 25m
+    memory: 64Mi
+    ephemeral-storage: 256Mi
+
+sentryTopologySpread: &sentryTopologySpread
+  - maxSkew: 3
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app: sentry
+
+global:
+  tolerations: *preemptibleTolerations
+
+system:
+  url: https://sentry.byulmaru.co
+  public: true
+
+asHook: false
+
+user:
+  create: false
+
+auth:
+  register: false
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: cert-issuer
+    nginx.ingress.kubernetes.io/proxy-body-size: "200m"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "256k"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.org/redirect-to-https: "true"
+  hostname: sentry.byulmaru.co
+  tls:
+    - secretName: tls
+      hosts:
+        - sentry.byulmaru.co
+
+postgresql:
+  enabled: false
+
+externalPostgresql:
+  host: postgres-rw
+  port: 5432
+  database: sentry
+  existingSecret: postgres
+  existingSecretKeys:
+    username: username
+    password: password
+
+redis:
+  enabled: true
+  architecture: standalone
+  replica:
+    replicaCount: 0
+    persistence:
+      enabled: false
+  auth:
+    enabled: false
+  master:
+    affinity: *preemptibleAffinity
+    tolerations: *preemptibleTolerations
+    persistence:
+      enabled: false
+
+clickhouse:
+  enabled: false
+
+zookeeper:
+  enabled: false
+
+externalClickhouse:
+  host: main-clickhouse-headless
+  tcpPort: 9000
+  httpPort: 8123
+  username: default
+  database: sentry
+  singleNode: true
+
+kafka:
+  enabled: true
+  provisioning:
+    replicationFactor: 1
+  controller:
+    replicaCount: 1
+    affinity: *preemptibleAffinity
+    tolerations: *preemptibleTolerations
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+        ephemeral-storage: 512Mi
+    persistence:
+      storageClass: oci-bv
+      size: 20Gi
+
+filestore:
+  backend: s3
+  s3:
+    existingSecret: secrets
+    accessKeyIdRef: S3_ACCESS_KEY_ID
+    secretAccessKeyRef: S3_SECRET_ACCESS_KEY
+    bucketName: sentry
+    endpointUrl: https://ax1l6f331yog.compat.objectstorage.ap-seoul-1.oraclecloud.com
+    region_name: ap-seoul-1
+    default_acl: private
+  filesystem:
+    persistence:
+      enabled: false
+  profiles:
+    backend: s3
+    s3:
+      existingSecret: secrets
+      accessKeyIdRef: S3_ACCESS_KEY_ID
+      secretAccessKeyRef: S3_SECRET_ACCESS_KEY
+      bucketName: sentry
+      endpointUrl: https://ax1l6f331yog.compat.objectstorage.ap-seoul-1.oraclecloud.com
+      region_name: ap-seoul-1
+      default_acl: private
+
+replay:
+  storage:
+    backend: s3
+    s3:
+      existingSecret: secrets
+      accessKeyIdRef: S3_ACCESS_KEY_ID
+      secretAccessKeyRef: S3_SECRET_ACCESS_KEY
+      bucketName: sentry
+      endpointUrl: https://ax1l6f331yog.compat.objectstorage.ap-seoul-1.oraclecloud.com
+      region_name: ap-seoul-1
+      default_acl: private
+
+symbolicator:
+  enabled: true
+  api:
+    affinity: *preemptibleAffinity
+    tolerations: *preemptibleTolerations
+    persistence:
+      enabled: false
+
+sentry:
+  existingSecret: secrets
+  existingSecretKey: SENTRY_SECRET_KEY
+  web:
+    replicas: 1
+    affinity: *preemptibleAffinity
+    topologySpreadConstraints: *sentryTopologySpread
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+        ephemeral-storage: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1536Mi
+  taskWorker:
+    replicas: 1
+    affinity: *preemptibleAffinity
+    topologySpreadConstraints: *sentryTopologySpread
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+        ephemeral-storage: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1536Mi
+  taskBroker:
+    affinity: *preemptibleAffinity
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+    persistence:
+      enabled: false
+  taskScheduler:
+    affinity: *preemptibleAffinity
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  ingestConsumerEvents:
+    replicas: 1
+    affinity: *preemptibleAffinity
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  ingestConsumerTransactions:
+    replicas: 1
+    affinity: *preemptibleAffinity
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  ingestConsumerAttachments:
+    replicas: 1
+    affinity: *preemptibleAffinity
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  ingestReplayRecordings:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  ingestOccurrences:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  ingestFeedback:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  ingestMonitors:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  monitorsClockTasks:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  monitorsClockTick:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  billingMetricsConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  genericMetricsConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  metricsConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerEvents:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerGenericMetrics:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerMetrics:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerResultsEapItems:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerTransactions:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  processSegments:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  processSpans:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  postProcessForwarderErrors:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  postProcessForwarderIssuePlatform:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  postProcessForwarderTransactions:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  cleanup:
+    affinity: *preemptibleAffinity
+    topologySpreadConstraints: *sentryTopologySpread
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+        ephemeral-storage: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+snuba:
+  api:
+    affinity: *preemptibleAffinity
+    topologySpreadConstraints: *sentryTopologySpread
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+        ephemeral-storage: 512Mi
+      limits:
+        cpu: 500m
+        memory: 768Mi
+  consumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  eapItemsConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  outcomesConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  outcomesBillingConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  replacer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  metricsConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerEapItems:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerEvents:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerGenericMetricsDistributions:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerGenericMetricsSets:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerGenericMetricsCounters:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerGenericMetricsGauges:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  genericMetricsGaugesConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  genericMetricsCountersConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  genericMetricsDistributionConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  genericMetricsSetsConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerMetrics:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  subscriptionConsumerTransactions:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  replaysConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  transactionsConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  profilingProfilesConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  profilingFunctionsConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  profilingChunksConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  issueOccurrenceConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+  groupAttributesConsumer:
+    resources: *smallWorkloadResources
+    topologySpreadConstraints: *sentryTopologySpread
+
+hooks:
+  activeDeadlineSeconds: 900
+  dbCheck:
+    image:
+      repository: docker.io/library/busybox
+      tag: 1.37.0
+  snubaInit:
+    kafka:
+      enabled: true
+
+metrics:
+  enabled: false
+
+mail:
+  backend: dummy
