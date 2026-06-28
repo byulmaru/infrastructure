@@ -21,8 +21,6 @@ spec:
     - https://kubernetes-sigs.github.io/descheduler/
     - https://helm.elastic.co
     - https://github.com/cloudnative-pg/plugin-barman-cloud
-    - oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
-    - oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
   destinations:
     - server: https://kubernetes.default.svc
       namespace: "*"
