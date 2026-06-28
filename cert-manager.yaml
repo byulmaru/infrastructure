@@ -13,6 +13,17 @@ spec:
         valuesObject:
           crds:
             enabled: true
+          securityContext:
+            runAsUser: 1001
+          webhook:
+            securityContext:
+              runAsUser: 1001
+          cainjector:
+            securityContext:
+              runAsUser: 1001
+          startupapicheck:
+            securityContext:
+              runAsUser: 1001
     - repoURL: https://github.com/byulmaru/infrastructure.git
       targetRevision: HEAD
       path: cert-manager
