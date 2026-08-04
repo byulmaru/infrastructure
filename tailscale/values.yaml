@@ -4,6 +4,7 @@ operatorConfig:
 proxyConfig:
   image:
     repository: docker.io/tailscale/tailscale
+  defaultProxyClass: tailscale-default
 oauthSecretVolume:
   secret:
     secretName: oauth-client-credentials

@@ -7,3 +7,15 @@ spec:
     pod:
       tailscaleContainer:
         image: docker.io/tailscale/k8s-proxy:latest
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
+  name: tailscale-default
+spec:
+  statefulSet:
+    pod:
+      tailscaleContainer:
+        resources:
+          requests:
+            memory: 32Mi
